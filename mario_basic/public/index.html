@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Super Mario</title>
+    <script type="module" src="/js/main.js"></script>
+    <style>
+      body {
+        background: #000;
+        margin: 0;
+      }
+
+      .board {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+      }
+
+      #screen {
+        display:block;
+        image-rendering: pixelated;
+        margin: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="board">
+      <canvas id="screen" width="640" height="640"></canvas>
+    </div>
+  </body>
+</html>
