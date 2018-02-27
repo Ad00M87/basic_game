@@ -1,30 +1,38 @@
-import SpriteSheet from './SpriteSheet.js';
-import {loadImage, loadLevel} from './loaders.js';
-
-function drawBackground(background, context, sprites) {
-  background.ranges.forEach(([x1, x2, y1, y2]) => {
-    for (let x = x1; x < x2; x++) {
-      for (let y = y1; y < y2; y++) {
-        sprites.drawTile(background.tile, context, x, y);
-      }
-    }
-  })
-}
+import Compositor from './Compositor.js';
+import Entity from './Entity.js';
+import Timer from './Timer.js'
+import {loadLevel} from './loaders.js';
+import {createMario} from './entities.js'
+import {loadBackgroundSprites} from './sprites.js';
+import {createBackgroundLayer, createSpriteLayer} from './layers.js';
 
 const canvas = document.getElementById("screen");
 const context = canvas.getContext('2d');
 
-loadImage('/images/tiles.png')
-.then(image => {
-  const sprites = new SpriteSheet(image, 16, 16);
-  sprites.define('ground', 0, 0);
-  sprites.define('sky', 3, 23);
-  sprites.define('coins', 24, 0);
+Promise.all([
+  createMario(),
+  loadBackgroundSprites(),
+  loadLevel('backgrounds'),
+])
+.then(([mario, backgroundSprites, level]) => {
+  const comp = new Compositor();
 
-  loadLevel('backgrounds')
-  .then(level => {
-    level.backgrounds.forEach(background => {
-      drawBackground(background, context, sprites);
-    })
-  })
+  const backgroundLayer = createBackgroundLayer(level.backgrounds, backgroundSprites);
+  comp.layers.push(backgroundLayer);
+
+  const gravity = 30;
+  mario.pos.set(64, 180);
+  mario.vel.set(200, -600);
+
+  const spriteLayer = createSpriteLayer(mario);
+  comp.layers.push(spriteLayer);
+
+  const timer = new Timer(1/60);
+  timer.update = function update(deltaTime) {
+    comp.draw(context);
+    mario.update(deltaTime);
+    mario.vel.y += gravity;
+  }
+
+  timer.start();
 });
